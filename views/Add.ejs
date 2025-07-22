@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Add Clock Entry</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="mt-5">Add Clock In/Out Entry</h1>
+
+        <% if (messages && messages.length> 0) { %>
+            <div class="alert alert-danger">
+                <% messages.forEach(function(message) { %>
+                    <p>
+                        <%= message %>
+                    </p>
+                    <% }); %>
+            </div>
+            <% } %>
+
+                <form action="/add" method="POST" class="mt-4">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" class="form-control" required <% if (formData
+                            && formData.username) { %> value="<%= formData.username %>" <% } else { %> value="" <% } %>>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clockIn">Clock In:</label>
+                        <input type="time" id="clockIn" name="clockIn" class="form-control" required <% if (formData &&
+                            formData.clockIn) { %> value="<%= formData.clockIn %>" <% } else { %> value="" <% } %>>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="breakStart">Break Start:</label>
+                        <input type="time" id="breakStart" name="breakStart" class="form-control" required <% if
+                            (formData && formData.breakStart) { %> value="<%= formData.breakStart %>" <% } else { %>
+                                value="" <% } %>>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="breakEnd">Break End:</label>
+                        <input type="time" id="breakEnd" name="breakEnd" class="form-control" required <% if (formData
+                            && formData.breakEnd) { %> value="<%= formData.breakEnd %>" <% } else { %> value="" <% } %>>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clockOut">Clock Out:</label>
+                        <input type="time" id="clockOut" name="clockOut" class="form-control" required <% if (formData
+                            && formData.clockOut) { %> value="<%= formData.clockOut %>" <% } else { %> value="" <% } %>>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="totalHour">Total Hour:</label>
+                        <input type="number" step="0.01" id="totalHour" name="totalHour" class="form-control" required
+                            <% if (formData && formData.totalHour) { %> value="<%= formData.totalHour %>" <% } else { %>
+                                value="" <% } %>>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Date:</label>
+                        <input type="date" id="date" name="date" class="form-control" required <% if (formData &&
+                            formData.date) { %> value="<%= formData.date %>" <% } else { %> value="" <% } %>>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit Entry</button>
+                </form>
+    </div>
+</body>
+
+</html>
