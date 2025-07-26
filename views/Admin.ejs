@@ -41,14 +41,14 @@
         <tbody>
             <% timesheet.forEach(timesheet => { %>
                 <tr>
-                    <td><%= timesheet.username %></td>
-                    <td><%= timesheet.clockin %></td>
-                    <td><%= timesheet.breakstart %></td>
-                    <td><%= timesheet.breakend %></td>
-                    <td><%= timesheet.clockout %></td>
-                    <td><%= timesheet.totalhour %></td>
-                    <td><a href="/update/<%= timesheet.id %>" class="btn btn-warning">Update</a></td>
-                    <td><a href="/delete/<%= timesheet.id %>" class="btn btn-danger">Delete</a></td>
+                    <td><%= timesheet.staff_name %></td>
+            <td><%= timesheet.clock_in %></td>
+            <td><%= timesheet.clock_out %></td>
+            <td><%= timesheet.break_start %></td>
+            <td><%= timesheet.break_end %></td>
+            <td><%= timesheet.total_hour %></td>
+                    <td><a href="/update/<%= timesheet.staff_id %>" class="btn btn-warning">Update</a></td>
+                    <td><a href="/delete/<%= timesheet.staff_id %>" class="btn btn-danger">Delete</a></td>
                 </tr>
             <% }) %>
         </tbody>

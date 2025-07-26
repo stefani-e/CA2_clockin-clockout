@@ -13,7 +13,7 @@ const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'Republic_C207',
-    database: 'c237_timesheetapp',
+    database: 'ca2_animaloff',
     port: 3306,
 });
 
@@ -81,7 +81,7 @@ app.get('/search', checkAdmin, (req, res) => {
             .json({ error: 'Not Found' });
     }
     const query =
-        'SELECT * FROM timesheet WHERE username LIKE ? OR clock_in LIKE ? OR clock_out LIKE ? '
+        'SELECT * FROM timesheet WHERE staff_name LIKE ? OR clock_in LIKE ? OR clock_out LIKE ? '
     ' OR break_start LIKE ?  OR break_end LIKE ?  OR total_hour LIKE ?';
     db.query(query, [searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm],
         (err, results) => {
@@ -102,9 +102,9 @@ app.get('/register', (req, res) => {
 });
 
 const validateRegistration = (req, res, next) => {
-    const { username, password, role } = req.body;
+    const { staff_name, password, role } = req.body;
 
-    if (!username || !password || !role) {
+    if (!staff_name || !password || !role) {
         req.flash('error', 'All fields are required.');
         req.flash('formData', req.body);
         return res.redirect('/register');
@@ -127,13 +127,13 @@ const validateRegistration = (req, res, next) => {
 
 
 app.post('/register', validateRegistration, (req, res) => {
-    const { username, password, role } = req.body;
+    const { staff_name, password, role } = req.body;
 
-    const sql = 'INSERT INTO timesheet (username, password, role) VALUES (?, SHA1(?), ?)';
-    db.query(sql, [username, password, role], (err, result) => {
+    const sql = 'INSERT INTO timesheet (staff_name, password, role) VALUES (?, SHA1(?), ?)';
+    db.query(sql, [staff_name, password, role], (err, result) => {
         if (err) {
             if (err.code === 'ER_DUP_ENTRY') {
-                req.flash('error', 'Username already exists.');
+                req.flash('error', 'staff_name already exists.');
                 req.flash('formData', req.body);
                 return res.redirect('/register');
             }
@@ -153,15 +153,15 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-    const { username, password } = req.body;
+    const { staff_name, password } = req.body;
 
-    if (!username || !password) {
-        req.flash('error', 'Username and password are required.');
+    if (!staff_name || !password) {
+        req.flash('error', 'staff_name and password are required.');
         return res.redirect('/login');
     }
 
-    const sql = 'SELECT * FROM timesheet WHERE username = ? AND password = SHA1(?)';
-    db.query(sql, [username, password], (err, results) => {
+    const sql = 'SELECT * FROM timesheet WHERE staff_name = ? AND password = SHA1(?)';
+    db.query(sql, [staff_name, password], (err, results) => {
         if (err) {
             throw err;
         }
@@ -170,7 +170,7 @@ app.post('/login', (req, res) => {
             req.flash('success', 'Login successful!');
             res.redirect('/');
         } else {
-            req.flash('error', 'Invalid username or password.');
+            req.flash('error', 'Invalid staff_name or password.');
             res.redirect('/login');
         }
     });
@@ -186,13 +186,13 @@ app.post('/add', (req, res) => {
     if (!req.session.timesheet) return res.redirect('/login');
 
     const { clockIn, breakStart, breakEnd, clockOut, totalHour, date } = req.body;
-    const username = req.session.timesheet.username;
+    const staff_name = req.session.timesheet.staff_name;
 
     const sql = `
-        INSERT INTO timesheet (username, clockin, breakstart, breakend, clockout, totalhour, date)
+        INSERT INTO timesheet (staff_name, clockin, breakstart, breakend, clockout, totalhour, date)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
-    db.query(sql, [username, clockIn, breakStart, breakEnd, clockOut, totalHour, date], (err) => {
+    db.query(sql, [staff_name, clockIn, breakStart, breakEnd, clockOut, totalHour, date], (err) => {
         if (err) throw err;
         req.flash('success', 'Timesheet added! Please log in.');
         res.redirect('/login');
@@ -200,11 +200,11 @@ app.post('/add', (req, res) => {
 });
 
 // Load the form with current data
-app.get('/update/:userId', (req, res) => {
-    const userId = req.params.userId;
-    const sql = 'SELECT * FROM timesheet WHERE userId = ?';
+app.get('/update/:staff_id', (req, res) => {
+    const staff_id = req.params.staff_id;
+    const sql = 'SELECT * FROM timesheet WHERE staff_id = ?';
 
-    db.query(sql, [userId], (error, results) => {
+    db.query(sql, [staff_id], (error, results) => {
         if (error) {
             console.error('Error retrieving timesheet:', error.message);
             return res.status(500).send('Error retrieving timesheet');
@@ -219,17 +219,17 @@ app.get('/update/:userId', (req, res) => {
 });
 
 // Handle form submission
-app.post('/update/:userId', (req, res) => {
-    const userId = req.params.userId;
+app.post('/update/:staff_id', (req, res) => {
+    const staff_id = req.params.staff_id;
     const { Clock_in, Clock_out, Break_start, Break_end, Total_hour } = req.body;
 
     const sql = `
         UPDATE timesheet
         SET Clock_in = ?, Clock_out = ?, Break_start = ?, Break_end = ?, Total_hour = ?
-        WHERE userId = ?
+        WHERE staff_id = ?
     `;
 
-    db.query(sql, [Clock_in, Clock_out, Break_start, Break_end, Total_hour, userId], (error, results) => {
+    db.query(sql, [Clock_in, Clock_out, Break_start, Break_end, Total_hour, staff_id], (error, results) => {
         if (error) {
             console.error("Error updating timesheet:", error);
             return res.status(500).send('Error updating timesheet');
@@ -250,9 +250,9 @@ app.post('/logout', (req, res) => {
 });
 
 // app.get('/deleteUser/:id', (req, res) => {
-//     const userId = req.params.id;
-//     const sql = 'DELETE FROM users WHERE userId = ?';
-//     connection.query(sql, [userId], (error, results) => {
+//     const staff_id = req.params.id;
+//     const sql = 'DELETE FROM users WHERE staff_id = ?';
+//     connection.query(sql, [staff_id], (error, results) => {
 //         if (error) {
 //             // Handle any error that occurs during the database operation
 //             console.error("Error deleting product:", error);

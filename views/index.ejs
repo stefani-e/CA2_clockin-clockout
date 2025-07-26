@@ -25,8 +25,8 @@
         <% } %>
 
         <% if (user) { %>
-            <h3>Hello, <%= timesheet.username %></h3>
-            <a href="/List" class="btn btn-primary mt-3">View User List</a>
+            <h3>Hello, <%= user.staff_name %></h3>
+            <a href="/List" class="btn btn-primary mt-3">View staff List</a>
             <a href="/logout" class="btn btn-danger mt-3 ms-2">Logout</a>
         <% } else { %>
             <a href="/register" class="btn btn-primary mt-3">Register</a>
