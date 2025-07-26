@@ -47,14 +47,20 @@ const checkAuthenticated = (req, res, next) => {
         res.redirect('/login');
     }
 };
-const checkAdmin = (req, res, next) => {
-    if (req.session.timesheet.role === 'admin') {
-        return next();
-    } else {
-        req.flash('error', 'Access denied');
-        res.redirect('/Admin');
-    }
-};
+app.get('/Admin', checkAdmin, (req, res) => {
+    const sql = 'SELECT * FROM timesheet';
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('DB Error:', err);
+            return res.status(500).send('Database Error');
+        }
+        res.render('Admin', { 
+            user: req.session.timesheet,   
+            timesheet: results,           
+            messages: req.flash('success') 
+        });
+    });
+});
 app.get('/', (req, res) => {
     res.render('index', { user: req.session.timesheet, messages: req.flash('success') });
 });

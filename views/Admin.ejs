@@ -23,7 +23,7 @@
         <input type="text" name="search" class="form-control w-50 d-inline-block">
         <button type="submit" class="btn btn-primary">Search</button>
     <div class="text-center">
-        <h3>Welcome, <%=timesheet.staff_name %></h3>
+        <h3>Welcome, <%=user.staff_name %></h3>
         </div>
     <table class="table table-hover small text-center">
       <thead>
@@ -39,18 +39,20 @@
             </tr>
         </thead>
         <tbody>
-            <% timesheet.forEach(timesheet => { %>
-                <tr>
-                    <td><%= timesheet.staff_name %></td>
-            <td><%= timesheet.clock_in %></td>
-            <td><%= timesheet.clock_out %></td>
-            <td><%= timesheet.break_start %></td>
-            <td><%= timesheet.break_end %></td>
-            <td><%= timesheet.total_hour %></td>
-                    <td><a href="/update/<%= timesheet.staff_id %>" class="btn btn-warning">Update</a></td>
-                    <td><a href="/delete/<%= timesheet.staff_id %>" class="btn btn-danger">Delete</a></td>
-                </tr>
-            <% }) %>
+            <tbody>
+    <% timesheet.forEach(record => { %>
+        <tr>
+            <td><%= record.staff_name %></td>
+            <td><%= record.clock_in %></td>
+            <td><%= record.break_start %></td>
+            <td><%= record.break_end %></td>
+            <td><%= record.clock_out %></td>
+            <td><%= record.total_hour %></td>
+            <td><a href="/update/<%= record.staff_id %>" class="btn btn-warning">Update</a></td>
+            <td><a href="/delete/<%= record.staff_id %>" class="btn btn-danger">Delete</a></td>
+        </tr>
+    <% }) %>
+</tbody>
         </tbody>
     </table>
         <a href="/logout" class="btn btn-secondary mt-3">Logout</a>
