@@ -21,7 +21,7 @@
     <table class="table table-hover small text-center">
       <thead> 
           <tr>
-            <th width="100">timesheetname</th>
+            <th width="100">staffname</th>
             <th width="100">ClockIN</th>
             <th width="50">Break Start</th>
             <th width="50">Break End</th>
@@ -34,7 +34,7 @@
       <tbody>
         <% timesheet.forEach(timesheet => { %>
           <tr>
-            <td><%= timesheet.staff_name %></td>
+            <td><%= user.staff_name %></td>
             <td><%= timesheet.clock_in %></td>
             <td><%= timesheet.clock_out %></td>
             <td><%= timesheet.break_start %></td>
@@ -46,7 +46,7 @@
         </tbody>
         </table>
         <div class="text-center">
-            <a href="/Logout" class="btn btn-primary">Back</a>
+            <a href="/" class="btn btn-primary">Back</a>
                 
 
         

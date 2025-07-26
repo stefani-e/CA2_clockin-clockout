@@ -40,20 +40,21 @@
         </thead>
         <tbody>
             <tbody>
-    <% timesheet.forEach(record => { %>
+    <% timesheet.forEach(timesheet => { %>
         <tr>
-            <td><%= record.staff_name %></td>
-            <td><%= record.clock_in %></td>
-            <td><%= record.break_start %></td>
-            <td><%= record.break_end %></td>
-            <td><%= record.clock_out %></td>
-            <td><%= record.total_hour %></td>
-            <td><a href="/update/<%= record.staff_id %>" class="btn btn-warning">Update</a></td>
-            <td><a href="/delete/<%= record.staff_id %>" class="btn btn-danger">Delete</a></td>
+            <td><%= user.staff_name %></td>
+            <td><%= timesheet.clock_in %></td>
+            <td><%= timesheet.break_start %></td>
+            <td><%= timesheet.break_end %></td>
+            <td><%= timesheet.clock_out %></td>
+            <td><%= timesheet.total_hour %></td>
+            <td><a href="/update/<%= timesheet.staff_id %>" class="btn btn-warning">Update</a></td>
+            <td><a href="/delete/<%= timesheet.staff_id %>" class="btn btn-danger">Delete</a></td>
+            <td><a href="/add/<%=timesheet.staff_id%>" class="btn btn-danger">Add staff info</a></td>
         </tr>
     <% }) %>
 </tbody>
         </tbody>
     </table>
-        <a href="/logout" class="btn btn-secondary mt-3">Logout</a>
+        <a href="/" class="btn btn-secondary mt-3">back</a>
 </body>

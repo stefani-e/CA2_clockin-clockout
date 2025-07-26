@@ -47,6 +47,22 @@ const checkAuthenticated = (req, res, next) => {
         res.redirect('/login');
     }
 };
+const checkAdmin = (req, res, next) => {
+    if (!req.session.timesheet) {
+        req.flash('error', 'Please log in first');
+        return res.redirect('/login');
+    }
+
+    if (req.session.timesheet.role === 'admin') {
+        return next();
+    } else {
+        req.flash('error', 'Access denied');
+        return res.redirect('/List');
+    }
+};
+app.get('/', (req, res) => {
+    res.render('index', { user: req.session.timesheet, messages: req.flash('success') });
+});
 app.get('/Admin', checkAdmin, (req, res) => {
     const sql = 'SELECT * FROM timesheet';
     db.query(sql, (err, results) => {
@@ -56,28 +72,31 @@ app.get('/Admin', checkAdmin, (req, res) => {
         }
         res.render('Admin', { 
             user: req.session.timesheet,   
-            timesheet: results,           
+            timesheet: results,            
             messages: req.flash('success') 
         });
     });
 });
-app.get('/', (req, res) => {
-    res.render('index', { user: req.session.timesheet, messages: req.flash('success') });
-});
-app.get('/Admin', checkAdmin, (req, res) => {
-    if (req.session.timesheet.role === 'admin') {
-        res.render('Admin', { user: req.session.timesheet, messages: req.flash('success') });
-    } else {
-        req.flash('error', 'Access denied');
-        res.redirect('/List');
-    }
-});
 app.get('/List', checkAuthenticated, (req, res) => {
     if (req.session.timesheet.role === 'admin') {
-        res.redirect('/Admin');
-    } else {
-        res.render('User', { user: req.session.timesheet, messages: req.flash('success') });
+        return res.redirect('/Admin');
     }
+
+    const staff_name = req.session.timesheet.staff_name;
+    const sql = 'SELECT * FROM timesheet WHERE staff_name = ?';
+
+    db.query(sql, [staff_name], (err, results) => {
+        if (err) {
+            console.error('Error retrieving user timesheet:', err);
+            return res.status(500).send('Database error');
+        }
+
+        res.render('List', { 
+            user: req.session.timesheet,
+            timesheet: results,           
+            messages: req.flash('success')
+        });
+    });
 });
 
 app.get('/search', checkAdmin, (req, res) => {
@@ -244,7 +263,15 @@ app.post('/update/:staff_id', (req, res) => {
         res.redirect('/');
     });
 });
-
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            return res.status(500).send('Error logging out');
+        }
+        res.redirect('/login');
+    });
+});
 app.post('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
