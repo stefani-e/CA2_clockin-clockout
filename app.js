@@ -81,7 +81,7 @@ app.get('/search', checkAdmin, (req, res) => {
             .json({ error: 'Not Found' });
     }
     const query =
-        'SELECT * FROM timesheet WHERE staff_name LIKE ? OR clock_in LIKE ? OR clock_out LIKE ? '
+        'SELECT * FROM timesheet WHERE staff_name LIKE ? OR clock_out LIKE ? OR clock_in LIKE ? '
     ' OR break_start LIKE ?  OR break_end LIKE ?  OR total_hour LIKE ?';
     db.query(query, [searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm],
         (err, results) => {
@@ -185,14 +185,14 @@ app.get('/add', (req, res) => {
 app.post('/add', (req, res) => {
     if (!req.session.timesheet) return res.redirect('/login');
 
-    const { clockIn, breakStart, breakEnd, clockOut, totalHour, date } = req.body;
+    const { staff_id,clock_in, break_start, break_end, clock_out, total_hour, date } = req.body;
     const staff_name = req.session.timesheet.staff_name;
 
     const sql = `
-        INSERT INTO timesheet (staff_name, clockin, breakstart, breakend, clockout, totalhour, date)
+        INSERT INTO timesheet (staff_name, clock_in, break_start, break_end, clock_out, total_hour, date)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
-    db.query(sql, [staff_name, clockIn, breakStart, breakEnd, clockOut, totalHour, date], (err) => {
+    db.query(sql, [staff_name, clock_in, break_start, b, clock_in, total_hour, date], (err) => {
         if (err) throw err;
         req.flash('success', 'Timesheet added! Please log in.');
         res.redirect('/login');
@@ -221,15 +221,15 @@ app.get('/update/:staff_id', (req, res) => {
 // Handle form submission
 app.post('/update/:staff_id', (req, res) => {
     const staff_id = req.params.staff_id;
-    const { Clock_in, Clock_out, Break_start, Break_end, Total_hour } = req.body;
+    const { c, clock_in, break_start, break_end, total_hour } = req.body;
 
     const sql = `
         UPDATE timesheet
-        SET Clock_in = ?, Clock_out = ?, Break_start = ?, Break_end = ?, Total_hour = ?
+        SET c = ?, clock_in = ?, break_start = ?, b = ?, total_hour = ?
         WHERE staff_id = ?
     `;
 
-    db.query(sql, [Clock_in, Clock_out, Break_start, Break_end, Total_hour, staff_id], (error, results) => {
+    db.query(sql, [c, clock_in, break_start, break_end, total_hour, staff_id], (error, results) => {
         if (error) {
             console.error("Error updating timesheet:", error);
             return res.status(500).send('Error updating timesheet');

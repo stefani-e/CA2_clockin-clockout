@@ -22,40 +22,40 @@
 
                 <form action="/add" method="POST" class="mt-4">
                     <div class="form-group">
-                        <label for="username">Username:</label>
-                        <input type="text" id="username" name="username" class="form-control" required <% if (formData
-                            && formData.username) { %> value="<%= formData.username %>" <% } else { %> value="" <% } %>>
+                        <label for="staff_name">staff_name:</label>
+                        <input type="text" id="staff_name" name="staff_name" class="form-control" required <% if (formData
+                            && formData.staff_name) { %> value="<%= formData.staff_name %>" <% } else { %> value="" <% } %>>
                     </div>
 
                     <div class="form-group">
-                        <label for="clockIn">Clock In:</label>
-                        <input type="time" id="clockIn" name="clockIn" class="form-control" required <% if (formData &&
-                            formData.clockIn) { %> value="<%= formData.clockIn %>" <% } else { %> value="" <% } %>>
+                        <label for="clock_in">Clock In:</label>
+                        <input type="time" id="clock_in" name="clock_in" class="form-control" required <% if (formData &&
+                            formData.clock_in) { %> value="<%= formData.clock_in %>" <% } else { %> value="" <% } %>>
                     </div>
 
                     <div class="form-group">
-                        <label for="breakStart">Break Start:</label>
-                        <input type="time" id="breakStart" name="breakStart" class="form-control" required <% if
-                            (formData && formData.breakStart) { %> value="<%= formData.breakStart %>" <% } else { %>
+                        <label for="break_start">Break Start:</label>
+                        <input type="time" id="break_start" name="break_start" class="form-control" required <% if
+                            (formData && formData.break_start) { %> value="<%= formData.break_start %>" <% } else { %>
                                 value="" <% } %>>
                     </div>
 
                     <div class="form-group">
-                        <label for="breakEnd">Break End:</label>
-                        <input type="time" id="breakEnd" name="breakEnd" class="form-control" required <% if (formData
-                            && formData.breakEnd) { %> value="<%= formData.breakEnd %>" <% } else { %> value="" <% } %>>
+                        <label for="break_end">Break End:</label>
+                        <input type="time" id="break_end" name="break_end" class="form-control" required <% if (formData
+                            && formData.break_end) { %> value="<%= formData.break_end %>" <% } else { %> value="" <% } %>>
                     </div>
 
                     <div class="form-group">
-                        <label for="clockOut">Clock Out:</label>
-                        <input type="time" id="clockOut" name="clockOut" class="form-control" required <% if (formData
-                            && formData.clockOut) { %> value="<%= formData.clockOut %>" <% } else { %> value="" <% } %>>
+                        <label for="clock_out">Clock Out:</label>
+                        <input type="time" id="clock_out" name="clock_out" class="form-control" required <% if (formData
+                            && formData.clock_out) { %> value="<%= formData.clock_out %>" <% } else { %> value="" <% } %>>
                     </div>
 
                     <div class="form-group">
-                        <label for="totalHour">Total Hour:</label>
-                        <input type="number" step="0.01" id="totalHour" name="totalHour" class="form-control" required
-                            <% if (formData && formData.totalHour) { %> value="<%= formData.totalHour %>" <% } else { %>
+                        <label for="total_hour">Total Hour:</label>
+                        <input type="number" step="0.01" id="total_hour" name="total_hour" class="form-control" required
+                            <% if (formData && formData.total_hour) { %> value="<%= formData.total_hour %>" <% } else { %>
                                 value="" <% } %>>
                     </div>
 
