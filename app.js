@@ -239,7 +239,15 @@ app.post('/update/:userId', (req, res) => {
     });
 });
 
-
+app.post('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            return res.status(500).send('Error logging out');
+        }
+        res.redirect('/login');
+    });
+});
 
 // app.get('/deleteUser/:id', (req, res) => {
 //     const userId = req.params.id;
