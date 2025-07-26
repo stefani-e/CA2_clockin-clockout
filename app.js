@@ -57,7 +57,7 @@ const checkAdmin = (req, res, next) => {
         return next();
     } else {
         req.flash('error', 'Access denied');
-        return res.redirect('/Adminlist');
+        return res.redirect('/List');
     }
 };
 app.get('/', (req, res) => {
@@ -77,9 +77,9 @@ app.get('/Admin', checkAdmin, (req, res) => {
         });
     });
 });
-app.get('/userlist', checkAuthenticated, (req, res) => {
+app.get('/List', checkAuthenticated, (req, res) => {
     if (req.session.timesheet.role === 'admin') {
-        return res.redirect('/Adminlist');
+        return res.redirect('/Admin');
     }
 
     const staff_name = req.session.timesheet.staff_name;
@@ -102,7 +102,7 @@ app.get('/userlist', checkAuthenticated, (req, res) => {
 app.get('/search', checkAdmin, (req, res) => {
     const searchTerm = req.query.search;
     if (!searchTerm) {
-        return res.redirect('/userlist')
+        return res.redirect('/List')
             .json({ error: 'Not Found' });
     }
     const query =
@@ -115,7 +115,7 @@ app.get('/search', checkAdmin, (req, res) => {
                 return res.status(500).json({ error: 'Internal Server Error' });
             }
             if (results.length > 0) {
-                res.render('userlist', { timesheet: results, user: req.session.timesheet, messages: req.flash('success') });
+                res.render('List', { timesheet: results, user: req.session.timesheet, messages: req.flash('success') });
             } else {
                 res.status(404).json({ error: 'No results found' });
             }
