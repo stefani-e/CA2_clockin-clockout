@@ -1,13 +1,12 @@
 const express = require('express');
 const mysql = require('mysql2');
-
+const multer = require('multer');
 
 const session = require('express-session');
 
 const flash = require('connect-flash');
 
 const path = require('path');
-
 const app = express();
 
 
@@ -18,6 +17,16 @@ const db = mysql.createConnection({
     database: 'ca2_animaloff',
     port: 3306,
 });
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public');
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    }
+});
+const upload = multer({ storage: storage });
 
 db.connect((err) => {
     if (err) {
@@ -153,11 +162,12 @@ const validateRegistration = (req, res, next) => {
 };
 
 
-app.post('/register', validateRegistration, (req, res) => {
+app.post('/register', upload.single('image'), validateRegistration, (req, res) => {
     const { staff_name, password, role } = req.body;
+    const image = req.file ? req.file.filename : null;
 
-    const sql = 'INSERT INTO timesheet (staff_name, password, role) VALUES (?, SHA1(?), ?)';
-    db.query(sql, [staff_name, password, role], (err, result) => {
+    const sql = 'INSERT INTO timesheet (staff_name, password, role, image) VALUES (?, SHA1(?), ?, ?)';
+    db.query(sql, [staff_name, password, role, image], (err, result) => {
         if (err) {
             if (err.code === 'ER_DUP_ENTRY') {
                 req.flash('error', 'staff_name already exists.');
@@ -285,7 +295,7 @@ app.post('/add/:staff_id', (req, res) => {
         );
     });
 
-    // Load the form with current data
+    
     app.get('/update/:staff_id', (req, res) => {
         const staff_id = req.params.staff_id;
         const sql = 'SELECT * FROM timesheet WHERE staff_id = ?';
@@ -304,7 +314,7 @@ app.post('/add/:staff_id', (req, res) => {
         });
     });
 
-    // Handle form submission
+    
     app.post('/update/:staff_id', (req, res) => {
         const staff_id = req.params.staff_id;
         const { clock_out, clock_in, break_start, break_end, total_hour } = req.body;

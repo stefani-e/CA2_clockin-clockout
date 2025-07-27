@@ -36,7 +36,8 @@
             </div>
             <% } %>
 
-                <form action="/register" method="POST" class="mt-4">
+                <form action="/register" method="POST" class="mt-4" enctype="multipart/form-data"
+>
                     <div class="mb-3">
                         <label for="staff_name" class="form-label">Staff Name:</label>
                         <input type="text" id="staff_name" name="staff_name" class="form-control" required
@@ -56,6 +57,11 @@
                             <option value="admin" <% if (formData && formData.role==='admin' ) { %> selected <% } %>
                                     >Admin</option>
                         </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Image:</label>
+                        <input type="file" id="image" name="image" class="form-control" accept="image/*" required>
                     </div>
 
                     <button type="submit" class="btn btn-primary">Register</button>
