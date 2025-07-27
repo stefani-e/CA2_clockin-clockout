@@ -116,22 +116,25 @@ app.get('/search', checkAdmin, (req, res) => {
         return res.redirect('/Admin')
             .json({ error: 'Not Found' });
     }
-    const query =
-        'SELECT * FROM timesheet WHERE LOWER(staff_name) LIKE CONCAT(`%`, ?, `%`) ; '
-
-    db.query(query, [searchTerm],
-        (err, results) => {
+    
+    const query = `
+        SELECT * FROM timesheet 
+        WHERE LOWER(staff_name) LIKE ?
+    `;
+     db.query(query, [`%${searchTerm.toLowerCase()}%`],(err, results) => {
             if (err) {
                 console.error('Error finding', err)
                 return res.status(500).json({ error: 'Staff Not Found' });
             }
             if (results.length > 0) {
-                res.render('Admin', { timesheet: results, user: req.session.timesheet, messages: req.flash('success') });
+                res.render('List', { timesheet: results, user: req.session.timesheet, messages: req.flash('success') });
             } else {
                 res.status(404).json({ error: 'No results found' });
             }
         });
 });
+
+
 
 app.get('/register', (req, res) => {
     res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
@@ -278,96 +281,96 @@ app.post('/add/:staff_id', (req, res) => {
         date
     } = req.body;
 
-        const sql = `
+    const sql = `
     INSERT INTO timesheet
       (staff_id, staff_name, clock_in, break_start, break_end, clock_out, total_hour, date)
     VALUES
       (?, ?, ?, ?, ?, ?, ?, ?)
   `;
-        db.query(
-            sql,
-            [staff_id, staff_name, clock_in, break_start, break_end, clock_out, total_hour, date],
-            (err) => {
-                if (err) throw err;
-                req.flash('success', 'Timesheet added!');
-                res.redirect('/Admin');
-            }
-        );
+    db.query(
+        sql,
+        [staff_id, staff_name, clock_in, break_start, break_end, clock_out, total_hour, date],
+        (err) => {
+            if (err) throw err;
+            req.flash('success', 'Timesheet added!');
+            res.redirect('/Admin');
+        }
+    );
+});
+
+
+app.get('/update/:staff_id', (req, res) => {
+    const staff_id = req.params.staff_id;
+    const sql = 'SELECT * FROM timesheet WHERE staff_id = ?';
+
+    db.query(sql, [staff_id], (error, results) => {
+        if (error) {
+            console.error('Error retrieving timesheet:', error.message);
+            return res.status(500).send('Error retrieving timesheet');
+        }
+
+        if (results.length > 0) {
+            res.render('update', { timesheet: results[0] });
+        } else {
+            res.status(404).send('Timesheet not found');
+        }
     });
+});
 
-    
-    app.get('/update/:staff_id', (req, res) => {
-        const staff_id = req.params.staff_id;
-        const sql = 'SELECT * FROM timesheet WHERE staff_id = ?';
 
-        db.query(sql, [staff_id], (error, results) => {
-            if (error) {
-                console.error('Error retrieving timesheet:', error.message);
-                return res.status(500).send('Error retrieving timesheet');
-            }
+app.post('/update/:staff_id', (req, res) => {
+    const staff_id = req.params.staff_id;
+    const { clock_out, clock_in, break_start, break_end, total_hour } = req.body;
 
-            if (results.length > 0) {
-                res.render('update', { timesheet: results[0] });
-            } else {
-                res.status(404).send('Timesheet not found');
-            }
-        });
-    });
-
-    
-    app.post('/update/:staff_id', (req, res) => {
-        const staff_id = req.params.staff_id;
-        const { clock_out, clock_in, break_start, break_end, total_hour } = req.body;
-
-        const sql = `
+    const sql = `
         UPDATE timesheet
         SET clock_out = ?, clock_in = ?, break_start = ?, break_end = ?, total_hour = ?
         WHERE staff_id = ?
     `;
 
-        db.query(sql, [clock_out, clock_in, break_start, break_end, total_hour, staff_id], (error, results) => {
-            if (error) {
-                console.error("Error updating timesheet:", error);
-                return res.status(500).send('Error updating timesheet');
-            }
+    db.query(sql, [clock_out, clock_in, break_start, break_end, total_hour, staff_id], (error, results) => {
+        if (error) {
+            console.error("Error updating timesheet:", error);
+            return res.status(500).send('Error updating timesheet');
+        }
 
+        res.redirect('/List');
+    });
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            return res.status(500).send('Error logging out');
+        }
+        res.redirect('/login');
+    });
+});
+
+app.post('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            return res.status(500).send('Error logging out');
+        }
+        res.redirect('/login');
+    });
+});
+
+app.get('/deleteUser/:staff_id', (req, res) => {
+    const staff_id = req.params.staff_id;
+    db.query('DELETE FROM timesheet WHERE staff_id = ?', [staff_id], (error, results) => {
+        if (error) {
+            // Handle any error that occurs during the database operation
+            console.error("Error deleting.", error);
+            res.status(500).send('Error deleting.');
+        } else {
+            // Send a success response
             res.redirect('/List');
-        });
+        }
     });
-
-    app.get('/logout', (req, res) => {
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('Error destroying session:', err);
-                return res.status(500).send('Error logging out');
-            }
-            res.redirect('/login');
-        });
-    });
-
-    app.post('/logout', (req, res) => {
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('Error destroying session:', err);
-                return res.status(500).send('Error logging out');
-            }
-            res.redirect('/login');
-        });
-    });
-
-    app.get('/deleteUser/:staff_id', (req, res) => {
-        const staff_id = req.params.staff_id;
-        db.query('DELETE FROM timesheet WHERE staff_id = ?', [staff_id], (error, results) => {
-            if (error) {
-                // Handle any error that occurs during the database operation
-                console.error("Error deleting.", error);
-                res.status(500).send('Error deleting.');
-            } else {
-                // Send a success response
-                res.redirect('/List');
-            }
-        });
-    });
+});
 
 
 
@@ -400,8 +403,8 @@ app.post('/add/:staff_id', (req, res) => {
 
 
 
-    app.listen(3000, () => {
-        console.log('Server started on port 3000');
-    });
-    
+app.listen(3000, () => {
+    console.log('Server started on port 3000');
+});
+
 
