@@ -27,6 +27,7 @@
     <table class="table table-hover small text-center">
       <thead> 
           <tr>
+            <th width="100">Staff image</th>
             <th width="100">Staff Name</th>
             <th width="100">Clock IN</th>
             <th width="50">Break Start</th>
@@ -41,6 +42,13 @@
       <tbody>
         <% timesheet.forEach(timesheet => { %>
           <tr>
+            <td>
+              <% if (timesheet.staff_image) { %>
+                <img src="/image/<%=timesheet.image%>" alt="Staff Image" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
+              <% } else { %>
+                 No image uploaded  
+              <% } %>
+            </td>
             <td><%= timesheet.staff_name %></td>
             <td><%= timesheet.clock_in %></td>
             <td><%= timesheet.break_start %></td>
