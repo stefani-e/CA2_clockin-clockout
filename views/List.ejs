@@ -19,6 +19,7 @@
           <span class="navbar-toggler-icon"></span>
         </button>
       </div>
+      
     </nav>
   <div class="container">
     <br>
@@ -43,8 +44,10 @@
         <% timesheet.forEach(timesheet => { %>
           <tr>
             <td>
-              <% if (timesheet.staff_image) { %>
-                <img src="/image/<%=timesheet.image%>" alt="Staff Image" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
+              <% if (timesheet.image) { %>
+                <form action="/image/<%=timesheet.image%>" method="POST">
+                  <img src="/image/<%=timesheet.image%>" alt="Staff Image" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
+                </form>
               <% } else { %>
                  No image uploaded  
               <% } %>
@@ -64,7 +67,7 @@
         </tbody>
         </table>
         <div class="text-center">
-            <a href="/List" class="btn btn-primary">Back</a>
+            <a href="/" class="btn btn-primary">Back</a>
                 
 
         
