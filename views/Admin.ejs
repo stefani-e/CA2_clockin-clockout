@@ -5,13 +5,33 @@
   <title>Home</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    .navbar-custom {
-      background-color: rgb(16, 239, 90);
-    }
-  </style>
+  html, body {
+    height: 100%;
+    min-height: 100vh;
+  }
+  .navbar-custom {
+    background-color: rgb(16, 239, 90);
+  }
+  /* Big translucent RP logo banner */
+  .admin-banner-bg {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 50vh;
+    z-index: 0;
+    background: url('/images/rp-logo.png') no-repeat center center;
+    background-size: 35vw auto;
+    opacity: 0.08;
+    pointer-events: none;
+  }
+  body, .container, nav {
+    position: relative;
+    z-index: 1;
+  }
+</style>
 </head>
 
 <body>
+  <body>
+  <div class="admin-banner-bg"></div>
   <nav class="navbar navbar-expand-sm navbar-custom navbar-dark">
     <div class="container-fluid">
       <a class="navbar-brand" href="/">Clockin-Clockout App</a>
