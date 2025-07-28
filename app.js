@@ -11,11 +11,11 @@ const app = express();
 
 
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'Republic_C207',
-    database: 'ca2_animaloff',
-    port: 3306,
+    host: 'jt25h7.h.filess.io',
+    user: 'CA2_animaloff',
+    password: '179a48eeb474b383fe35657929e2dc3a8cbc3b4f',
+    database: 'CA2_animaloff',
+    port: 61002,
 });
 
 const storage = multer.diskStorage({
