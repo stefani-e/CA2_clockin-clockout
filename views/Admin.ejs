@@ -18,6 +18,18 @@
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
         <span class="navbar-toggler-icon"></span>
       </button>
+      <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav ms-auto">
+          <% if (user && user.role==='admin' ) { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin">Admin</a>
+            </li>
+            <% } %>
+              <li class="nav-item">
+                <a class="nav-link" href="/register">Add New Staff</a>
+              </li>
+        </ul>
+      </div>
     </div>
   </nav>
   <div class="container">
@@ -32,6 +44,7 @@
     </form>
     <br>
     <div class="text-center">
+      
       <h3>Welcome, <%=user.staff_name %>
       </h3>
     </div>
@@ -40,62 +53,34 @@
         <tr>
           <th width="100">Staff image</th>
           <th width="100">Staff name</th>
-          <th width="100">Clock In</th>
-          <th width="50">Break Start</th>
-          <th width="50">Break End</th>
-          <th width="50">Clock Out</th>
-          <th width="50">DATE</th>
-          <th width="50">Total Hour</th>
-          <th width="50">Update</th>
+          <th width="100">View</th>
           <th width="50">Delete</th>
-          <th width="50">Add Work Info</th>
         </tr>
       </thead>
       <tbody>
-        <% timesheet.forEach(timesheet=> { %>
+        <% staff.forEach(staff=> { %>
           <tr>
             <td>
-              <% if (timesheet.staff_image) { %>
-                <img src="/image/<%=timesheet.image%>" alt="Staff Image" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
-              <% } else { %>
-                 No image uploaded  
-              <% } %>
+              <% if (staff.image) { %>
+                <img src="/images/<%=staff.image%>" alt="Staff Image" class="img-fluid rounded-circle"
+                  style="width: 50px; height: 50px;">
+                <% } else { %>
+                  No image uploaded
+                  <% } %>
             </td>
             <td>
-              <%= timesheet.staff_name %>
+              <%= staff.staff_name %>
             </td>
+            <td><a href="/Staff/<%= staff.staff_id %>" class="btn btn-info">View</a></td>
             <td>
-              <%= timesheet.clock_in %>
-            </td>
-            <td>
-              <%= timesheet.break_start %>
-            </td>
-            <td>
-              <%= timesheet.break_end %>
-            </td>
-            <td>
-              <%= timesheet.clock_out %>
-            </td>
-            <td>
-              <%= timesheet.date %>
-            </td>
-            <td>
-              <%= timesheet.total_hour %>
-            </td>
-            <td><a href="/update/<%= timesheet.staff_id %>" class="btn btn-warning">Update</a></td>
-            <td>
-              <form action="/deleteUser/<%= timesheet.staff_id %>" method="GET" style="display:inline"><button
-                  type="submit" class="btn btn-danger">Delete</button></form>
-            </td>
-            <td>
-              <form action="/add/<%= timesheet.staff_id %>" method="GET" style="display:inline"><button type="submit"
-                  class="btn btn-danger">Add Staff info</button></form>
+              <form action="/delete/<%= staff.staff_id %>" method="GET" style="display:inline"><button type="submit"
+                  class="btn btn-danger">Delete</button></form>
             </td>
           </tr>
           <% }) %>
 
       </tbody>
-      </tbody>
     </table>
-    <a href="/" class="btn btn-secondary mt-3">back</a>
+    <a href="/" class="btn btn-secondary mt-3">Back</a>
+  </div>
 </body>

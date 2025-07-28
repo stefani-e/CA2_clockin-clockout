@@ -20,7 +20,7 @@ const db = mysql.createConnection({
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public');
+        cb(null, 'Public/images');
     },
     filename: (req, file, cb) => {
         cb(null, file.originalname);
@@ -36,7 +36,7 @@ db.connect((err) => {
 });
 
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static('public'));
+app.use(express.static('Public'));
 ;
 
 
@@ -52,7 +52,7 @@ app.use(flash());
 
 app.set('view engine', 'ejs');
 const checkAuthenticated = (req, res, next) => {
-    if (req.session.timesheet) {
+    if (req.session.staff) { 
         return next();
     } else {
         req.flash('error', 'Please log in to view this resource');
@@ -60,82 +60,132 @@ const checkAuthenticated = (req, res, next) => {
     }
 };
 const checkAdmin = (req, res, next) => {
-    if (!req.session.timesheet) {
+    if (!req.session.staff) { 
         req.flash('error', 'Please log in first');
         return res.redirect('/login');
     }
 
-    if (req.session.timesheet.role === 'admin') {
+    if (req.session.staff.role === 'admin') {
         return next();
     } else {
         req.flash('error', 'Access denied');
-        return res.redirect('/List');
+        return res.redirect('/Staff');
     }
 };
 app.get('/', (req, res) => {
-    res.render('index', { user: req.session.timesheet, messages: req.flash('success') });
+    res.render('index', { user: req.session.staff, messages: req.flash('success') });
 });
 app.get('/Admin', checkAdmin, (req, res) => {
-    const sql = 'SELECT * FROM timesheet';
+    const sql = 'SELECT * FROM staff';
     db.query(sql, (err, results) => {
         if (err) {
             console.error('DB Error:', err);
             return res.status(500).send('Database Error');
         }
         res.render('Admin', {
-            user: req.session.timesheet,
-            timesheet: results,
+            user: req.session.staff,
+            staff: results,
             messages: req.flash('success')
         });
     });
 });
-app.get('/List', checkAuthenticated, (req, res) => {
-    if (req.session.timesheet.role === 'admin') {
+app.get('/Staff', checkAuthenticated, (req, res) => {
+    if (req.session.staff.role === 'admin') {
         return res.redirect('/Admin');
     }
 
-    const staff_name = req.session.timesheet.staff_name;
-    const sql = 'SELECT * FROM timesheet WHERE staff_name = ?';
+    const staff_id = req.session.staff.staff_id;
+    const sqlStaff = 'SELECT * FROM staff WHERE staff_id = ?';
+    const sqlTimesheet = 'SELECT * FROM timesheet WHERE staff_id = ?';
 
-    db.query(sql, [staff_name], (err, results) => {
+    db.query(sqlStaff, [staff_id], (err, staffResults) => {
         if (err) {
-            console.error('Error retrieving user timesheet:', err);
+            console.error('Error retrieving staff:', err);
             return res.status(500).send('Database error');
         }
 
-        res.render('List', {
-            user: req.session.timesheet,
-            timesheet: results,
-            messages: req.flash('success')
+        db.query(sqlTimesheet, [staff_id], (err, timesheetResults) => {
+            if (err) {
+                console.error('Error retrieving timesheet:', err);
+                return res.status(500).send('Database error');
+            }
+
+            res.render('Staff', {
+                user: req.session.staff,
+                staff: staffResults[0], 
+                timesheet: timesheetResults,
+                messages: req.flash('success'),
+                user: req.session.staff
+            });
         });
     });
 });
+
 
 app.get('/search', checkAdmin, (req, res) => {
     const searchTerm = req.query.search;
     if (!searchTerm) {
-        return res.redirect('/Admin')
-            .json({ error: 'Not Found' });
+        return res.redirect('/Admin');
     }
     
     const query = `
-        SELECT * FROM timesheet 
+        SELECT * FROM staff 
         WHERE LOWER(staff_name) LIKE ?
     `;
-     db.query(query, [`%${searchTerm.toLowerCase()}%`],(err, results) => {
-            if (err) {
-                console.error('Error finding', err)
-                return res.status(500).json({ error: 'Staff Not Found' });
-            }
-            if (results.length > 0) {
-                res.render('List', { timesheet: results, user: req.session.timesheet, messages: req.flash('success') });
-            } else {
-                res.status(404).json({ error: 'No results found' });
-            }
-        });
+    db.query(query, [`%${searchTerm.toLowerCase()}%`], (err, results) => {
+        if (err) {
+            console.error('Error finding', err);
+            return res.status(500).json({ error: 'Staff Not Found' });
+        }
+        if (results.length > 0) {
+            
+            res.render('Admin', { staff: results, user: req.session.staff, messages: req.flash('success') });
+        } else {
+            
+            req.flash('success', 'No results found');
+            res.render('Admin', { staff: [], user: req.session.staff, messages: req.flash('success') });
+        }
+    });
 });
 
+app.get('/filter', checkAuthenticated, (req, res) => {
+    const date = req.query.date;
+    let staff_id;
 
+    if (req.session.staff.role === 'admin' && req.query.staff_id) {
+        staff_id = req.query.staff_id;
+    } else {
+        staff_id = req.session.staff.staff_id;
+    }
+
+    if (!date) {
+        
+        if (req.session.staff.role === 'admin') {
+            return res.redirect(`/Staff/${staff_id}`);
+        } else {
+            return res.redirect('/Staff');
+        }
+    }
+
+ 
+    db.query('SELECT * FROM staff WHERE staff_id = ?', [staff_id], (err, staffResults) => {
+        if (err || !staffResults.length) {
+            return res.status(500).send('Staff not found');
+        }
+        db.query('SELECT * FROM timesheet WHERE date LIKE ? AND staff_id = ?', [`%${date}%`, staff_id], (err, results) => {
+            if (err) {
+                console.error('DB Error:', err);
+                return res.status(500).send('Not Found');
+            }
+            res.render('Staff', {
+                user: req.session.staff,
+                staff: staffResults[0],
+                timesheet: results,
+                messages: req.flash('success')
+            });
+        });
+    });
+});
 
 app.get('/register', (req, res) => {
     res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
@@ -170,7 +220,7 @@ app.post('/register', upload.single('image'), validateRegistration, (req, res) =
     const { staff_name, password, role } = req.body;
     const image = req.file ? req.file.filename : null;
 
-    const sql = 'INSERT INTO timesheet (staff_name, password, role, image) VALUES (?, SHA1(?), ?, ?)';
+    const sql = 'INSERT INTO staff (staff_name, password, role, image) VALUES (?, SHA1(?), ?, ?)';
     db.query(sql, [staff_name, password, role, image], (err, result) => {
         if (err) {
             if (err.code === 'ER_DUP_ENTRY') {
@@ -201,13 +251,13 @@ app.post('/login', (req, res) => {
         return res.redirect('/login');
     }
 
-    const sql = 'SELECT * FROM timesheet WHERE staff_name = ? AND password = SHA1(?)';
+    const sql = 'SELECT * FROM staff WHERE staff_name = ? AND password = SHA1(?)';
     db.query(sql, [staff_name, password], (err, results) => {
         if (err) {
             throw err;
         }
         if (results.length > 0) {
-            req.session.timesheet = results[0];
+            req.session.staff = results[0];
             req.flash('success', 'Login successful!');
             res.redirect('/');
         } else {
@@ -217,94 +267,60 @@ app.post('/login', (req, res) => {
     });
 });
 
-app.get('/add', (req, res) => {
-    if (!req.session.timesheet) return res.redirect('/login');
-
-    const { staff_id, staff_name } = req.session.timesheet;
-    res.render('add', {
-        messages: [],
-        formData: {},
-        staff_id,       // used to set form action
-        staff_name      // used to display
-    });
-});
-
-app.post('/add', (req, res) => {
-    if (!req.session.timesheet) return res.redirect('/login');
-
-    const { staff_id, staff_name, clock_in, break_start, break_end, clock_out, total_hour, date } = req.body;
-
-    const sql = `
-        INSERT INTO timesheet (staff_id, staff_name, clock_in, break_start, break_end, clock_out, total_hour, date)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    db.query(sql, [staff_id, staff_name, clock_in, break_start, break_end, clock_out, total_hour, date], (err) => {
-        if (err) throw err;
-        req.flash('success', 'Timesheet added!');
-        res.redirect('/List');
-    });
-});
-
 
 app.get('/add/:staff_id', (req, res) => {
-    if (!req.session.timesheet) return res.redirect('/login');
+  if (!req.session.staff) return res.redirect('/login');
 
-    const staff_id = req.params.staff_id;
-    db.query(
-        'SELECT staff_name FROM timesheet WHERE staff_id = ?',
-        [staff_id],
-        (err, results) => {
-            if (err) throw err;
-            if (!results.length) return res.status(404).send('Staff not found');
+  const staff_id   = req.params.staff_id;
+  const staff_name = req.session.staff.staff_name;
 
-            res.render('add', {
-                messages: [],
-                formData: {},
-                staff_id,
-                staff_name: results[0].staff_name
-            });
-        }
-    );
+  res.render('add', {
+    messages:   [],
+    formData:   {},
+    staff_id,
+    staff_name
+  });
 });
 
 
 app.post('/add/:staff_id', (req, res) => {
-    if (!req.session.timesheet) return res.redirect('/login');
+  if (!req.session.staff) return res.redirect('/login');
 
-    const staff_id = req.params.staff_id;
-    const {
-        staff_name,
-        clock_in,
-        break_start,
-        break_end,
-        clock_out,
-        total_hour,
-        date
-    } = req.body;
+  const staff_id   = req.params.staff_id;
+  const staff_name = req.body.staff_name; 
+  const { clock_in, break_start, break_end, clock_out, total_hour, date } = req.body;
 
-    const sql = `
-    INSERT INTO timesheet
-      (staff_id, staff_name, clock_in, break_start, break_end, clock_out, total_hour, date)
-    VALUES
-      (?, ?, ?, ?, ?, ?, ?, ?)
+  const sql = `
+    INSERT INTO timesheet 
+      (staff_id, clock_in, break_start, break_end, clock_out, total_hour, date)
+    VALUES (?,?,?,?,?,?,?)
   `;
-    db.query(
-        sql,
-        [staff_id, staff_name, clock_in, break_start, break_end, clock_out, total_hour, date],
-        (err) => {
-            if (err) throw err;
-            req.flash('success', 'Timesheet added!');
-            res.redirect('/Admin');
-        }
-    );
+  db.query(
+    sql,
+    [staff_id, clock_in, break_start, break_end, clock_out, total_hour, date],
+    err => {
+      if (err) throw err;
+      req.flash('success','Timesheet added!');
+      res.redirect(`/staff/${staff_id}`);
+    }
+  );
 });
 
+app.get('/update', (req, res) => {
+    res.status(400).send('Timesheet ID is required');
+});
 
-app.get('/update/:staff_id', (req, res) => {
-    const staff_id = req.params.staff_id;
-    const sql = 'SELECT * FROM timesheet WHERE staff_id = ?';
+app.get('/update/:timesheet_id', (req, res) => {
+    const timesheet_id = req.params.timesheet_id;
 
-    db.query(sql, [staff_id], (error, results) => {
+    const sql = `
+        SELECT t.*, s.staff_name, s.image 
+        FROM timesheet t
+        JOIN staff s ON t.staff_id = s.staff_id
+        WHERE t.timesheet_id = ?
+    `;
+
+    db.query(sql, [timesheet_id], (error, results) => {
         if (error) {
             console.error('Error retrieving timesheet:', error.message);
             return res.status(500).send('Error retrieving timesheet');
@@ -319,23 +335,23 @@ app.get('/update/:staff_id', (req, res) => {
 });
 
 
-app.post('/update/:staff_id', (req, res) => {
-    const staff_id = req.params.staff_id;
-    const { clock_out, clock_in, break_start, break_end, total_hour } = req.body;
+app.post('/update/:timesheet_id', (req, res) => {
+    const timesheet_id = req.params.timesheet_id;
+    const { clock_out, clock_in, break_start, break_end, total_hour, date } = req.body;
 
     const sql = `
         UPDATE timesheet
-        SET clock_out = ?, clock_in = ?, break_start = ?, break_end = ?, total_hour = ?
-        WHERE staff_id = ?
+        SET clock_out = ?, clock_in = ?, break_start = ?, break_end = ?, total_hour = ?, date = ?
+        WHERE timesheet_id = ?
     `;
 
-    db.query(sql, [clock_out, clock_in, break_start, break_end, total_hour, staff_id], (error, results) => {
+    db.query(sql, [clock_out, clock_in, break_start, break_end, total_hour, date, timesheet_id], (error) => {
         if (error) {
             console.error("Error updating timesheet:", error);
             return res.status(500).send('Error updating timesheet');
         }
 
-        res.redirect('/List');
+        res.redirect('/Staff');
     });
 });
 
@@ -345,7 +361,7 @@ app.get('/logout', (req, res) => {
             console.error('Error destroying session:', err);
             return res.status(500).send('Error logging out');
         }
-        res.redirect('/login');
+        res.redirect('/');
     });
 });
 
@@ -355,23 +371,70 @@ app.post('/logout', (req, res) => {
             console.error('Error destroying session:', err);
             return res.status(500).send('Error logging out');
         }
-        res.redirect('/login');
+        res.redirect('/');
     });
 });
 
-app.get('/deleteUser/:staff_id', (req, res) => {
+app.get('/delete/:staff_id', (req, res) => {
     const staff_id = req.params.staff_id;
-    db.query('DELETE FROM timesheet WHERE staff_id = ?', [staff_id], (error, results) => {
+    db.query('DELETE FROM staff WHERE staff_id = ?', [staff_id], (error, results) => {
         if (error) {
-            // Handle any error that occurs during the database operation
+            
             console.error("Error deleting.", error);
             res.status(500).send('Error deleting.');
         } else {
-            // Send a success response
-            res.redirect('/List');
+           
+            res.redirect('/Admin');
         }
     });
 });
+
+app.get('/delete-timesheet/:timesheet_id', (req, res) => {
+  const timesheet_id = req.params.timesheet_id;
+  db.query('DELETE FROM timesheet WHERE timesheet_id = ?', [timesheet_id], (error, results) => {
+    if (error) {
+      console.error("Error deleting timesheet.", error);
+      return res.status(500).send('Error deleting timesheet.');
+    }
+    req.flash('success', 'Timesheet deleted!');
+    res.redirect('/Staff');
+  });
+});
+
+app.get('/staff/:staff_id', (req, res) => {
+  if (!req.session.staff) return res.redirect('/login');
+
+  const staff_id = req.params.staff_id;
+
+  db.query(
+    'SELECT staff_id, staff_name, role, image FROM staff WHERE staff_id = ?',
+    [staff_id],
+    (err, staffRows) => {
+      if (err) throw err;
+      if (!staffRows.length) return res.status(404).send('Staff not found');
+
+      const staff = staffRows[0];
+
+      db.query(
+        'SELECT timesheet_id, clock_in, break_start, break_end, clock_out, total_hour, date \
+         FROM timesheet WHERE staff_id = ? ORDER BY date DESC',
+        [staff_id],
+        (err2, timesheetRows) => {
+          if (err2) throw err2;
+
+          res.render('staff', {
+            user: req.session.staff,
+            staff,
+            timesheet: timesheetRows,
+            messages: req.flash('success')
+          });
+        }
+      );
+    }
+  );
+});
+
+
 
 
 
